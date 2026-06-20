@@ -1,0 +1,13 @@
+package com.learning.order.service;
+
+import com.learning.order.dto.OrderDto;
+import java.util.List;
+
+public interface OrderService {
+    OrderDto createOrder(OrderDto orderDto);
+    OrderDto getOrderById(Long id);
+    List<OrderDto> getOrdersByUserId(Long userId);
+    List<OrderDto> getAllOrders();
+    OrderDto updateOrder(Long id, OrderDto orderDto);
+    void deleteOrder(Long id);
+}

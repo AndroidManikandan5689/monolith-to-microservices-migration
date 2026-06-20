@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        INTERVIEW CONCEPT: Spring Boot Parent POM
+        ============================================
+        spring-boot-starter-parent provides:
+        1. Default Java version (we override to 21)
+        2. Default plugin versions (maven-compiler, surefire, etc.)
+        3. Dependency Management — you don't need to specify versions
+           for spring-boot-* dependencies. Parent manages them.
+        4. Resource filtering configuration
+
+        WHY USE PARENT POM?
+        - Version compatibility is guaranteed (no "jar hell")
+        - Less configuration in your pom.xml
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.0</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.learning</groupId>
+    <artifactId>user-order-api</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>user-order-api</name>
+    <description>Production-ready User and Order Management REST API - Learning Project</description>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- Java 21 — LTS version with Virtual Threads, Records, Pattern Matching -->
+        <java.version>21</java.version>
+        <!-- JWT library version -->
+        <jjwt.version>0.12.6</jjwt.version>
+        <!-- Springdoc OpenAPI (Swagger) version -->
+        <springdoc.version>2.5.0</springdoc.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- ============================================================
+             INTERVIEW CONCEPT: Spring Boot Starters
+             ============================================================
+             A "starter" is a pre-packaged set of dependencies.
+             spring-boot-starter-web includes:
+               - spring-webmvc (DispatcherServlet, Controllers)
+               - jackson (JSON serialization/deserialization)
+               - embedded Tomcat (no need for external server!)
+             This is AUTO-CONFIGURATION in action.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+            Spring Data JPA Starter includes:
+            - Hibernate (JPA implementation)
+            - Spring Data repositories (JpaRepository)
+            - HikariCP connection pool (fastest JDBC pool)
+            - Spring Transaction management
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!--
+            Spring Security Starter:
+            - Authentication & Authorization filters
+            - SecurityContext management
+            - Password encoding (BCrypt)
+            - CSRF protection
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
+            Validation Starter (Bean Validation / Hibernate Validator):
+            - @NotNull, @NotBlank, @Email, @Size, @Min, @Max
+            - Validates request bodies, path variables, query params
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL JDBC Driver — connects Spring to PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            JWT Dependencies (JJWT library)
+            - jjwt-api: API interfaces
+            - jjwt-impl: Implementation (runtime only)
+            - jjwt-jackson: JSON parsing for JWT payload
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            Springdoc OpenAPI (Swagger UI):
+            - Auto-generates API documentation from annotations
+            - Provides interactive Swagger UI at /swagger-ui.html
+            - Generates OpenAPI 3.0 JSON at /v3/api-docs
+        -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!--
+            Spring Boot Starter Data Redis:
+            - Client driver (Lettuce) for Redis operations
+            - Spring Cache Redis integration support
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!--
+            Spring for Apache Kafka:
+            - Provides KafkaTemplate for message production
+            - Provides @KafkaListener for event-driven message consumption
+        -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!--
+            Lombok — eliminates boilerplate Java code:
+            - @Getter, @Setter → auto-generates getter/setter
+            - @NoArgsConstructor, @AllArgsConstructor → constructors
+            - @Builder → builder pattern
+            - @Slf4j → logger field
+            INTERVIEW: Lombok uses Annotation Processing (APT) at compile time
+        -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot DevTools — hot reload during development -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ============================================================
+             TEST DEPENDENCIES
+        -->
+
+        <!--
+            Spring Boot Test Starter includes:
+            - JUnit 5 (Jupiter)
+            - Mockito (mocking framework)
+            - AssertJ (fluent assertions)
+            - Spring Test (MockMvc, @SpringBootTest)
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Security Test — @WithMockUser, SecurityMockMvcRequestPostProcessors -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            Testcontainers — spins up real Docker containers during tests.
+            INTERVIEW: This replaces H2 in-memory DB for integration tests.
+            Tests run against REAL PostgreSQL container.
+        -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                spring-boot-maven-plugin:
+                - Creates executable "fat jar" (contains all dependencies)
+                - Enables: mvn spring-boot:run
+                - The jar includes embedded Tomcat
+                INTERVIEW: How does Spring Boot's fat jar work?
+                Answer: It uses a custom ClassLoader (LaunchedURLClassLoader)
+                to load nested jars — standard Java doesn't support this.
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

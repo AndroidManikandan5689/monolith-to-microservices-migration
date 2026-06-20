@@ -1,0 +1,148 @@
+# ============================================================
+# INTERVIEW CONCEPT: application.yml vs application.properties
+# ============================================================
+# YAML is hierarchical — less repetition than .properties
+# application.properties equivalent:
+#   spring.datasource.url=jdbc:postgresql://localhost:5432/userorderdb
+#   spring.datasource.username=postgres
+#
+# Spring ENVIRONMENT ABSTRACTION:
+# Properties can come from (in priority order, highest first):
+#  1. Command line args: --server.port=9090
+#  2. OS environment variables: SERVER_PORT=9090
+#  3. application-{profile}.yml
+#  4. application.yml (this file)
+#  5. @PropertySource annotations
+# ============================================================
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api  # All endpoints prefixed with /api
+
+spring:
+  application:
+    name: user-order-api
+
+  # ============================================================
+  # DATASOURCE CONFIGURATION
+  # ============================================================
+  # INTERVIEW: What is HikariCP? Why is it the default in Spring Boot?
+  # HikariCP is the fastest JDBC connection pool.
+  # Connection Pool: pre-creates DB connections and reuses them.
+  # Without pooling: each request opens/closes a DB connection → SLOW
+  # With pooling: connections are borrowed and returned → FAST
+  # ============================================================
+  datasource:
+    url: jdbc:postgresql://localhost:5432/userorderdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: UserOrderPool
+      maximum-pool-size: 10      # Max concurrent DB connections
+      minimum-idle: 5            # Minimum idle connections maintained
+      connection-timeout: 30000  # 30s — wait time to get a connection
+      idle-timeout: 600000       # 10min — how long idle connection lives
+      max-lifetime: 1800000      # 30min — max connection lifetime
+
+  # ============================================================
+  # JPA / HIBERNATE CONFIGURATION
+  # ============================================================
+  # INTERVIEW: What is the difference between JPA and Hibernate?
+  # JPA = Java Persistence API — a SPECIFICATION (interface/contract)
+  # Hibernate = IMPLEMENTATION of JPA specification
+  # Spring Data JPA = Spring abstraction OVER JPA/Hibernate
+  #
+  # JPA ──────────────> Hibernate ──────────────> PostgreSQL
+  # (Specification)    (Implementation)           (Database)
+  # ============================================================
+  jpa:
+    hibernate:
+      # INTERVIEW: What does ddl-auto do?
+      # create-drop: create schema on start, drop on stop (tests only)
+      # create: create schema on start (dev, destroys data!)
+      # update: update schema if entity changed (dev, risky in prod)
+      # validate: validate schema matches entities (prod recommended)
+      # none: do nothing (prod — use Flyway/Liquibase instead)
+      ddl-auto: update  # We use update for learning; use validate + Flyway in prod
+    show-sql: true  # Logs all SQL — useful for N+1 debugging
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true  # Pretty-prints SQL in logs
+        # INTERVIEW: What is the JPA Persistence Context?
+        # A first-level cache — Hibernate tracks all entities loaded in
+        # a transaction. If you load the same entity twice, Hibernate
+        # returns the cached instance (no second DB query).
+        default_batch_fetch_size: 20  # Solves N+1 for collections
+
+  # ============================================================
+  # SECURITY CONFIGURATION (we'll fill this more in Phase 5)
+  # ============================================================
+  security:
+    user:
+      name: admin   # Default user (overridden by our UserDetailsService)
+      password: admin
+
+  # ============================================================
+  # REDIS CACHE CONFIGURATION
+  # ============================================================
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10 minutes in milliseconds
+      cache-null-values: false
+
+  # ============================================================
+  # KAFKA EVENT-DRIVEN MESSAGING CONFIGURATION
+  # ============================================================
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: user-order-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.learning.api.dto"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+
+# ============================================================
+# CUSTOM JWT CONFIGURATION
+# ============================================================
+# INTERVIEW: Why put JWT secret in yml? In production, use:
+# - Environment variables
+# - AWS Secrets Manager / GCP Secret Manager / Vault
+# NEVER hardcode secrets in source code!
+# ============================================================
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000  # 24 hours in milliseconds
+
+# ============================================================
+# SPRINGDOC / SWAGGER CONFIGURATION
+# ============================================================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# ============================================================
+# LOGGING CONFIGURATION
+# ============================================================
+logging:
+  level:
+    com.learning.api: DEBUG      # Our code — show DEBUG logs
+    org.springframework.security: DEBUG  # Security filter chain logs
+    org.hibernate.SQL: DEBUG     # Show SQL (same as show-sql but for logger)
+    org.hibernate.type.descriptor.sql: TRACE  # Show SQL parameter values

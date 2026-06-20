@@ -1,0 +1,21 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        # Route User Management & Auth requests to user-service
+        - id: user-service-route
+          uri: ${USER_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/users/**, /auth/**
+
+        # Route Order Management requests to order-service
+        - id: order-service-route
+          uri: ${ORDER_SERVICE_URI:http://localhost:8082}
+          predicates:
+            - Path=/orders/**
